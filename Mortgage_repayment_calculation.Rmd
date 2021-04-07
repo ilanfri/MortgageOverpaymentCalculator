@@ -1,0 +1,178 @@
+---
+title: "How Mortgage Repayments Are Calculated"
+author: "Ilan Fridman Rojas"
+date: "01/04/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+options(scipen=999) #Switch off scientific notation when printing numbers
+```
+
+The derivation above is a cleaned-up version of the derivation by [Gurdip Singh](https://www.hughcalc.org/formula_deriv.php#:~:text=Concept&text=Calculate%20C%20%3D%20M%20%2D%20H%2C,P%20%3D%20Q%20and%20repeat%201.).
+
+# Definitions
+
+Define the following quantities:
+$$\begin{aligned}
+P \;\;&\mathrm{is\; the\; principal\; amount\; borrowed} \\
+I \;\;&\mathrm{is\; the\; interest\; rate}, \\
+p_i \;\;&\mathrm{is\; the\; principal\; repayment\; at\; time\;} i \\
+r_i \;\;&\mathrm{is\; the\; remaining\; principal\; at\; time\;} i \\
+n \;\;&\mathrm{is\; the\; total\; number\; of\; repayments} \\
+m \;\;&\mathrm{is\; the\; monthly\; repayment\; amount} \\
+\end{aligned}$$,
+
+Such that you initially borrowed an amount, $P$, at an interest rate $I$ (in fractional form, so e.g. $0.03$ for $3\%$), to be paid back over $n$ monthly payments, each repayment instalment of size $m$. At each monthly payment (indexed by $i$) you pay back $p_i$ towards the principal amount (the rest of the monthly payment goes towards interest) and after that have an amount $r_i$ of the principal amount left to be repaid.
+
+Our goal is to calculate the monthly repayment, $m$, needed to pay back the loan in the time specified.
+
+## First payment
+
+For convenience we will also define the amount of interest paid monthly (interest is charged annually, then this amount is just divided evenly across the months), as
+$$j = I/12 \; ,$$
+and the interest paid at month $i$ we will denote as $J_i$
+
+At each (monthly) payment, the amount paid towards interest is
+$$J_i = r_i j$$
+where $r_i$ is the remaining principal to be paid as will be defined below, and clearly $r_1 = P$, such that for the first payment, $J_1 = r_1 j = Pj$.
+
+Likewise, at each payment the amount paid towards repaying the principal is
+$$p_i = m - J_i$$
+so that at the first repayment this is $p_1 = m - J_1 = m - Pj$.
+towards the principal amount.
+
+This means that after the $i$-th payment the remaining value of the principal to be paid off is given by
+$$r_i = P - \sum_{j \leq i} p_j$$.
+
+So that after the first payment the remaining principal amount is
+$$\begin{aligned}
+r_1 &= P - p_1 \\
+&= P - (m - Pj) \\
+&= P(1+j) - m \; .
+\end{aligned}$$
+
+
+## Second payment
+
+It is clear that at the next payment time, we have an interest payment of
+$$J_{2} = r_1 j = ((P+Pj)-m)j = (P(1+j)-m)j \; ,$$
+a principal payment of
+$$p_{2} = m - J_{2} = m - (P(1+j)-m)j \; ,$$
+and a remaining principal amount left to pay
+$$\begin{aligned}
+r_{2} &= P - p_1 -p_{2} \\
+&= P - (m-Pj) - (m - (P(1+j)-m)j) \\
+&= P(1+j) - m - (m - (P(1+j)-m)j) \\
+&= P(1+j) - m - m + (P(1+j)-m)j \\
+&= P(1+j) - 2m + Pj(1+j) -mj \\
+&= P(1+j)(1+j) - 2m -mj \\
+&= P(1+j)^2 - 2m - mj \\
+&= P(1+j)^2 - m(1+j) - m
+\end{aligned}$$
+where in the last line we have sought to write things in terms of factors of $(1+j)$.
+
+
+## Third payment
+
+Similarly for the third payment, we have an interest payment of
+$$\begin{aligned}
+J_{3} &= r_{2}j\\
+&= [P(1+j)^2 - m(1+j) - m]j \; ,
+\end{aligned}$$
+
+a contribution towards paying off the principal of
+$$\begin{aligned}
+p_{3} &= m - J_{3} \\
+&= m - [P(1+j)^2 - m(1+j) - m]j \; ,
+\end{aligned}$$
+
+and the remaining principal to be paid off after this payment is given by
+$$\begin{aligned}
+r_{3} &= P - p_1 -p_{2} - p_{3}\\
+&= r_{2} - p_{3}\\
+&= [P(1+j)^2 - m(1+j) - m] - [m - j(P(1+j)^2 - m(1+j) - m)] \\
+&= P(1+j)^2 - m(1+j) - m - m + Pj(1+j)^2 - mj(1+j) - mj \\
+&= P(1+j)^3 - m(1+j)^2 - 2m - mj \\
+&= P(1+j)^3 - m(1+j)^2 -m(1+j) - m \; .
+\end{aligned}$$
+
+# General Form
+
+In the equations for $r_i$ above we can already see the pattern which will generalise to further payment periods:
+$$r_{i} = P(1+j)^i - m\sum_{k=0}^{i-1}(1+j)^k$$
+
+The summation can be readily recognised to be a geometric series, for which we can use the well-known relation
+$$\sum_{k=0}^{l}ar^k = a\left( \frac{1-r^{l+1}}{1-r}  \right)$$
+where in our case $a=m$, $r=1+j$, $l=i-1$. 
+
+Considering the full set of payment times such that $i \rightarrow n$, we then have that the remaining principal amount to be paid after the last, $n$-th payment can be written as
+$$\begin{aligned}
+r_{n} &= P(1+j)^n - m\left( \frac{1-(1+j)^n}{-j} \right) \\
+&= P(1+j)^n + \frac{m[1-(1+j)^n]}{j} \; .
+\end{aligned}$$
+
+We would like to find the monthly repayment, $m$, for which the debt has been fully repaid after the $n$ payments. Therefore we set $r_i = 0$ in the equation above and solve for $m$, giving
+$$m = \frac{Pj(1+j)^n}{(1+j)^n-1} \; .$$
+
+
+# Validation
+
+This final equation can be verified against the form given by [Business Insider](https://www.businessinsider.com/personal-finance/how-to-calculate-mortgage-payment), but now with a full derivation of it to help understand it.
+
+You can verify that the monthly repayments computed using the formula above numerically match those given by online calculators such as that from the [Money Advice Service](https://www.moneyadviceservice.org.uk/en/tools/mortgage-calculator) or the [Money Saving Expert](https://www.moneysavingexpert.com/mortgages/mortgage-rate-calculator/).
+
+# Implementation
+
+Entering the interest rate in the usual, annual, percentage form, and the term of the mortage in years, the monthly repayment required to repay the loan (including interest) in the desired term is given by the function below.
+
+The monthly repayment and total, final payment amount (including interest) for a 460k GBP principal value, with an interest rate of 1.78, over a term of 30 years, is given by:
+
+```{r function, include=TRUE}
+repaymentCalc = function(principal, interestrate, term){
+  i = 0.01*1/12*interestrate
+  n = 12*term
+  monthlyrepayment = principal*i*(1+i)^n/((1+i)^n-1)
+  totalrepayment = n*monthlyrepayment
+  return(list(monthlytotal=monthlyrepayment, finaltotal=totalrepayment))
+}
+
+repaymentCalc(460000, 1.78, 30)
+```
+
+
+The breakdown for each payment of payment towards principal and towards interest, as well as the remaining principal to be paid, and the montly repayment made (with a minimum payment to complete the principal repayment within the term as given by the function above), is given by the function below, following exactly the same algorithm as detailed in the sections above to compute the relevant quantities.
+
+```{r function2, include=TRUE}
+repaymentCalcDetailed = function(principal, interestrate, term, monthlypayment){
+  
+  monthlyinterest = 0.01*interestrate/12
+  months = seq(12*term)
+  principalrepayments = c()
+  
+  interestpayments = c()
+  remainingprincipals = c()
+  remainingprincipal = principal
+  
+  for(i in months){
+    interestpayment = remainingprincipal*monthlyinterest
+    principalrepayment = monthlypayment - interestpayment
+    principalrepayments = c(principalrepayments, principalrepayment)
+    remainingprincipal = principal - sum(principalrepayments)
+    if(remainingprincipal < 0){
+      principalrepayments = principalrepayments[-length(principalrepayments)]
+      break
+    }
+    interestpayments = c(interestpayments, interestpayment)
+    remainingprincipals = c(remainingprincipals, remainingprincipal)
+  }
+  
+  #stopifnot(abs(sum(principalrepayments) - principal) < 1.0)
+
+  return(list(interest=interestpayments, principal=principalrepayments, remainingprincipal=remainingprincipals))
+}
+
+repaymentCalcDetailed(460000, 1.78, 30, 1650.09)
+```
